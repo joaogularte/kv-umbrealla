@@ -3,16 +3,20 @@ defmodule KVServer do
   Documentation for `KVServer`.
   """
 
-  @doc """
-  Hello world.
+  require Logger
+  def accept(port)
 
-  ## Examples
+  {:ok, socket} = :gen_tcp.listen(port, [:binary, packet: :line, active: false, reuseaddr: true])
 
-      iex> KVServer.hello()
-      :world
+  Logger.info("Accepting connections on port #{port}")
 
-  """
-  def hello do
-    :world
+  end
+
+  def loop_acceptor(socket) do
+    {:ok, client} = :gen_tcp.accept(socket)
+  end
+
+  def serve(socket) do
+  socket
   end
 end
