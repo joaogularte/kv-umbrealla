@@ -4,19 +4,40 @@ defmodule KVServer do
   """
 
   require Logger
-  def accept(port)
 
-  {:ok, socket} = :gen_tcp.listen(port, [:binary, packet: :line, active: false, reuseaddr: true])
+  def accept(port) do
+    {:ok, socket} =
+      :gen_tcp.listen(port, [:binary, packet: :line, active: false, reuseaddr: true])
 
-  Logger.info("Accepting connections on port #{port}")
-
+    Logger.info("Accepting connections on port #{port}")
+    loop_acceptor(socket)
   end
 
   def loop_acceptor(socket) do
     {:ok, client} = :gen_tcp.accept(socket)
+    serve(client)
+    loop_acceptor(socket)
   end
 
   def serve(socket) do
-  socket
+    socket
+    |> read_line()
+    |> write_line(socket)
+
+    serve(socket)
+  end
+
+  def read_line(socket) do
+    case :gen_tcp.recv(socket, 0) do
+      {:ok, msg} -> msg
+      {:error, error} -> error
+    end
+  end
+
+  def write_line(msg, socket) do
+    case :gen_tcp.send(socket, msg) do
+      :ok -> :ok
+      {:error, error} -> {:error, error}
+    end
   end
 end
