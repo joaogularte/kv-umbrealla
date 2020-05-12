@@ -9,11 +9,17 @@ defmodule KVServer.Application do
     children = [
       # Starts a worker by calling: KVServer.Worker.start_link(arg)
       # {KVServer.Worker, arg}
+      {Task.Supervisor, name: KVServer.TaskSupervisor},
+      {Task, fn -> KVServer.accept(port()) end}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
     opts = [strategy: :one_for_one, name: KVServer.Supervisor]
     Supervisor.start_link(children, opts)
+  end
+
+  defp port() do
+    String.to_integer(System.get_env("PORT") || "4040")
   end
 end
